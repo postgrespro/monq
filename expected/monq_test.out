@@ -1,0 +1,372 @@
+create extension jsquery;
+create extension monq;
+set escape_string_warning=off;
+select '{ "a" : 1 }'::jsonb <=> '{ a : 1 }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : 1 }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $lt : 1 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $lt : 3 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $gt : 1 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $gt : 3 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $gte : 1 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $gte : 3 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $gte : 2 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $lte : 1 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $lte : 3 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $lte : 2 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $ne : 2 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $ne : 3 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : "ssl" }'::jsonb <=> '{ a: { $in: [ "ssl","security"] } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 1 }'::jsonb <=> '{ a: { $in: [ "ssl","security"] } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : "ssl" }'::jsonb <=> '{ a: { $nin: [ "ssl","security"] } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : "sslqwerty" }'::jsonb <=> '{ a: { $nin: [ "ssl","security"] } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : [ "ssl","security"] }'::jsonb <=> '{ a: { $size: 2 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : [ "ssl","security"] }'::jsonb <=> '{ a: { $size: 1 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : [ "ssl","security", "pattern"] }'::jsonb <=> '{ a: { $all: [ "ssl","security"] } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : [ "ssl","pattern"] }'::jsonb <=> '{ a: { $all: [ "ssl","security"] } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : [ "ssl","security"] }'::jsonb <=> '{ a: { $all: [ "ssl","security"] } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $exists : false } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ a : { $exists : true } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : 2 }'::jsonb <=> '{ a : { $exists : false } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : 2 }'::jsonb <=> '{ a : { $exists : true } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "b" : 2 }'::jsonb <=> '{ b: { $type: "int" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : "qwerttyu" }'::jsonb <=> '{ b: { $type: "int" } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "b" : 2 }'::jsonb <=> '{ b: { $type: "long" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : "qwerttyu" }'::jsonb <=> '{ b: { $type: "long" } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "b" : true }'::jsonb <=> '{ b: { $type: "bool" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : "fklgjlksdfgsldflsgjslkrjekfjkl" }'::jsonb <=> '{ b: { $type: "bool" } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "b" : "fklgjlksdfgsldflsgjslkrjekfjkl" }'::jsonb <=> '{ b: { $type: "array" } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "b" : [1, 4] }'::jsonb <=> '{ b: { $type: "array" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : "fklgjlksdfgsldflsgjslkrjekfjkl" }'::jsonb <=> '{ b: { $type: "string" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : [1, 4] }'::jsonb <=> '{ b: { $type: "string" } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "b" : 2.23432 }'::jsonb <=> '{ b: { $type: "double" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : 2 }'::jsonb <=> '{ b: { $type: "double" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "b" : 2 }'::jsonb <=> '{ b: { $type: "decimal" } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "maxKey" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "maxKey" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "binData" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "binData" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "objectId" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "objectId" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "javascript" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "javascript" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "symbol" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "symbol" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "javascriptWithScope" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "javascriptWithScope" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "timestamp" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "timestamp" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "minKey" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "minKey" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "regex" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "regex" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "null" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "null" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "date" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "date" value type
+select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "undefined" } }' :: mquery;
+ERROR:  Jsquery is not supported MongoDB "undefined" value type
+/* Or operator */
+select '{ "quantity" : 2, "price" : 10 }'::jsonb <=> '{ $or: [ { quantity: { $lt: 20 } }, { price: 10 } ] }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "quantity" : 200, "price" : 10 }'::jsonb <=> '{ $or: [ { quantity: { $lt: 20 } }, { price: 10 } ] }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "quantity" : 200, "price" : 10 }'::jsonb <=> '{ $or: [ { quantity: { $lt: 20 } }, { price: 100 } ] }' :: mquery;
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Nor operator */
+select '{ "quantity" : 2, "price" : 10 }'::jsonb <=> '{ $nor: [ { quantity: { $lt: 20 } }, { price: 10 } ] }' :: mquery;
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "quantity" : 200, "price" : 10 }'::jsonb <=> '{ $nor: [ { quantity: { $lt: 20 } }, { price: 10 } ] }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "quantity" : 200, "price" : 10 }'::jsonb <=> '{ $nor: [ { quantity: { $lt: 20 } }, { price: 100 } ] }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* And operator */
+select '{ "quantity" : 200, "price" : 10 }'::jsonb <=> '{ $and: [ { quantity: { $lt: 20 } }, { price: 100 } ] }' :: mquery;
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "quantity" : 5, "price" : 100 }'::jsonb <=> '{ $and: [ { quantity: { $lt: 20 } }, { price: 100 } ] }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Not operator */
+select '{ "quantity" : 5, "price" : 100 }'::jsonb <=> '{ price: { $not: { $gt: 1.99 } } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "quantity" : 5, "price" : 1 }'::jsonb <=> '{ price: { $not: { $gt: 1.99 } } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Mod operator */
+select '{ "quantity" : 2, "price" : 10 }'::jsonb <=> '{ qty: { $mod: [ 4, 0 ] } } ' :: mquery;
+ERROR:  MongoDB module operator is not supported by jsquery
+select '{"a": 5}'::jsonb <=> '{ a: { $eq: 5 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{"a": 5}'::jsonb <=> '{ a: { $eq: 6 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $where: "qw"} }' :: mquery;
+ERROR:  MongoDB where clause is not supported by jsquery
+select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $text: { $search: "qsddjkhjw" } } }' :: mquery;
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $text: { $search: "qw" } } }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{"a": { "qwerty" : 5} }'::jsonb <=> '{ "a.qwerty" : { $eq: 6 } }';
+ ?column? 
+----------
+ f
+(1 row)
+
+select '{"a": { "qwerty" : { "asdfgh" : { "fgfhg" : 5 } } } }'::jsonb <=> '{ "a.qwerty.asdfgh.fgfhg" : { $eq: 5 } }';
+ ?column? 
+----------
+ t
+(1 row)
+
