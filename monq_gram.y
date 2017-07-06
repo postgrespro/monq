@@ -283,7 +283,7 @@ json_mquery_exec(PG_FUNCTION_ARGS)
     char        *JSQUERY_QUERY = getJsquery(mq);
     Datum        js_query = callJsquery_in(JSQUERY_QUERY);
 
-    //deleteMquery(mq);
+    deleteMquery(mq);
 
     PG_FREE_IF_COPY(jb, 0);
     PG_FREE_IF_COPY(mq, 1);
@@ -306,7 +306,7 @@ mquery_json_exec(PG_FUNCTION_ARGS)
     char        *JSQUERY_QUERY = getJsquery(mq);
     Datum        js_query = callJsquery_in(JSQUERY_QUERY);
 
-    //deleteMquery(mq);
+    deleteMquery(mq);
 
     PG_FREE_IF_COPY(mq, 0);
     PG_FREE_IF_COPY(jb, 1);

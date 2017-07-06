@@ -24,25 +24,40 @@ deleteValueOperator(ValueOperator *vop)
 }
 
 void
-deleteOperator(Operator *op)
+deleteOperator(Operator *operator)
 {
-    switch(op->type)
+    switch(operator->type)
     {
         case NOP :
-            deleteNotOperator((NotOperator*) op );
+            deleteNotOperator((NotOperator*) operator );
             break;
         case AOP :
-            deleteArrayOperator((ArrayOperator*) op );
+            deleteArrayOperator((ArrayOperator*) operator );
             break;
         case VOP :
-            deleteValueOperator((ValueOperator*) op );
+            deleteValueOperator((ValueOperator*) operator );
             break;
-        default  :
+        case EOP :
+            deleteElemMatchOperator((ElemMatchOperator*) operator);
+            break;
+        case MOP :
             break;
     }
 }
 
-
+void
+deleteElemMatchOperator(ElemMatchOperator *elemMatchOperator)
+{
+    switch(elemMatchOperator->typeOfValue)
+    {
+        case E_EXPRESSION:
+            deleteExpression(elemMatchOperator->expression);
+            break;
+        case E_OP_OBJECT:
+            deleteOperatorObject(elemMatchOperator->operatorOpbject);
+            break;
+    }
+}
 
 void 
 deleteNotOperator(NotOperator *op)

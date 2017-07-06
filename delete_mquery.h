@@ -9,6 +9,8 @@
 
 	extern void deleteNotOperator(NotOperator *op);
 
+	extern void deleteElemMatchOperator(ElemMatchOperator *elemMatchOperator);
+
 	extern void deleteOperatorObject(OperatorObject *op_object);
 
 	extern void deleteLeafValueEq(LeafValue *lv);
