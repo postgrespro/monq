@@ -34,23 +34,24 @@
 /* Types of query tree nodes and leafs */
 %union 
 {
-    MQuery                    *mquery;
-    Expression                *exp;
-    Clause                    *cl;
-    MValue                    *vl;
-    LeafValue                 *lv;
-    List                      *list;
-    WhereClauseValue          *wcv;
-    char                      *strval;
-    int                        intval;
-    double                     dubval;
-    MArray                    *arrval;
-    bool                       boolval;
-    ArrayOperatorType         aop_type;
-    ExpressionOperatorType     exop_type;
+    MQuery                  *mquery;
+    Expression              *exp;
+    Clause                  *cl;
+    MValue                  *vl;
+    LeafValue               *lv;
+    List                    *list;
+    WhereClauseValue        *wcv;
+    char                    *strval;
+    int                      intval;
+    double                   dubval;
+    MArray                  *arrval;
+    bool                     boolval;
+    ArrayOperatorType        aop_type;
+    ExpressionOperatorType   exop_type;
     ValueOperatorType        valop_type;
-    OperatorObject           *oob;
-    Operator                  *op;
+    OperatorObject          *oob;
+    Operator                *op;
+    ElemMatchOperator       *elemMatchOp;
 }
 
 %type<mquery>     QUERY
@@ -72,13 +73,13 @@
 
 /* OPERATORS */
 
-/* Tree operator */
+/* Tree clause */
 %type<exop_type>    TREE_OPERATOR OR NOR AND
 %token              OR NOR AND
 
 /* Leaf value operator */
- %type<valop_type>    EQ LESS GREAT LESSEQ GREATEQ NOTEQ TYPE SIZE EXISTS NOT VALUE_OPERATOR
- %token               EQ NOTEQ LESS LESSEQ GREAT GREATEQ TYPE SIZE EXISTS NOT
+%type<valop_type>    EQ LESS GREAT LESSEQ GREATEQ NOTEQ TYPE SIZE EXISTS NOT VALUE_OPERATOR
+%token               EQ NOTEQ LESS LESSEQ GREAT GREATEQ TYPE SIZE EXISTS NOT
 
 /* Array operator */
 %type<aop_type>   IN NIN ALL ARRAY_OPERATOR
@@ -89,11 +90,16 @@
 %type<lv>         DIVISOR REMAINDER
 %token            MOD_OPERATOR
 
-/* Comment clause operator */
+/* ElemMatch operator */
+%type<op>            ELEMMATCH_OPERATOR
+%type<strval>        ELEMMATCH
+%token               ELEMMATCH
+
+/* Comment clause */
 %type<strval>     COMMENT_OPERATOR
 %token            COMMENT_OPERATOR
 
-/* Text clause operator */
+/* Text clause */
 %type<strval>     DIACRITIC_SENSITIVE_OPERATOR CASE_SENSITIVE_OPERATOR LANGUAGE_OPERATOR SEARCH_OPERATOR TEXT_OPERATOR
 %token            DIACRITIC_SENSITIVE_OPERATOR CASE_SENSITIVE_OPERATOR LANGUAGE_OPERATOR SEARCH_OPERATOR TEXT_OPERATOR
 
@@ -193,10 +199,15 @@ OPERATOR                : VALUE_OPERATOR EQ LEAF_VALUE                          
                         | ARRAY_OPERATOR EQ ARRAY                                       { $$ = createArrayOperator($1, $3); }
                         | MOD_OPERATOR EQ LSQBRACKET DIVISOR COMMA REMAINDER RSQBRACKET { $$ = createModOperator($4, $6); }
                         | NOT EQ LSCOPE OPERATOR RSCOPE                                 { $$ = createNotOperator($4); }
+                        | ELEMMATCH EQ ELEMMATCH_OPERATOR                               { $$ = $3; }
                         ;
 
 VALUE_OPERATOR          : EQ | NOTEQ | LESS | LESSEQ | GREAT | GREATEQ | TYPE | SIZE | EXISTS 
                         ;
+
+ELEMMATCH_OPERATOR      : OPEARATOR_OBJECT  { $$ = createElemMatchOperatorOpObject($1); }
+                        | EXPRESSION        { $$ = createElemMatchOperatorExpression($1); }
+                        ; 
 
 DIVISOR                 : LEAF_VALUE
                         ;
@@ -272,7 +283,7 @@ json_mquery_exec(PG_FUNCTION_ARGS)
     char        *JSQUERY_QUERY = getJsquery(mq);
     Datum        js_query = callJsquery_in(JSQUERY_QUERY);
 
-    deleteMquery(mq);
+    //deleteMquery(mq);
 
     PG_FREE_IF_COPY(jb, 0);
     PG_FREE_IF_COPY(mq, 1);
@@ -295,7 +306,7 @@ mquery_json_exec(PG_FUNCTION_ARGS)
     char        *JSQUERY_QUERY = getJsquery(mq);
     Datum        js_query = callJsquery_in(JSQUERY_QUERY);
 
-    deleteMquery(mq);
+    //deleteMquery(mq);
 
     PG_FREE_IF_COPY(mq, 0);
     PG_FREE_IF_COPY(jb, 1);

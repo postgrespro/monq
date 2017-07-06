@@ -49,6 +49,8 @@
 
 \$where							{ return WHERE_OPERATOR; }
 
+\$elemMatch						{ return ELEMMATCH; }
+
 \$or 							{ yylval.exop_type=_OR; return OR; }
 \$nor 							{ yylval.exop_type=_NOR; return NOR; }
 \$and							{ yylval.exop_type=_AND; return AND; }

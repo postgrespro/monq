@@ -370,3 +370,21 @@ select '{"a": { "qwerty" : { "asdfgh" : { "fgfhg" : 5 } } } }'::jsonb <=> '{ "a.
  t
 (1 row)
 
+select '{ "_id" : 3, "results" : [ { "product" : "abc", "score" : 7 }, { "product" : "abc", "score" : 8 } ] }' <=> '{ results: { $elemMatch: { product: "abc" } } }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "_id" : 3, "results" : [ 81, 84, 83] }' <=> '{ results: { $elemMatch: { $gte: 80, $lt: 85 } } }' :: mquery;
+ ?column? 
+----------
+ t
+(1 row)
+
+select '{ "_id" : 3, "results" : [ 81, 86, 83] }' <=> '{ results: { $elemMatch: { $gte: 80, $lt: 85 } } }' :: mquery;
+ ?column? 
+----------
+ f
+(1 row)
+

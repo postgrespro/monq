@@ -22,7 +22,8 @@
         NOP, 
         MOP, 
         AOP, 
-        VOP 
+        VOP,
+        EOP
     } TypeOfOperator;
 
     typedef enum ArrayOperatorType 
@@ -67,6 +68,12 @@
         LF_VALUE, 
         OP_OBJECT 
     } TypeOfValue;
+
+    typedef enum TypeOfElemMatchValue 
+    { 
+        E_EXPRESSION, 
+        E_OP_OBJECT 
+    } TypeOfElemMatchValue;
 
     typedef enum TypeOfWhereClauseValue 
     { 
@@ -194,6 +201,19 @@
     {
         List *clauseList;
     } Expression;
+
+    typedef struct ElemMatchOperator
+    {
+        TypeOfOperator          type;
+
+        TypeOfElemMatchValue    typeOfValue;
+
+        union
+        {
+            Expression         *expression;
+            OperatorObject     *operatorOpbject;
+        };
+    } ElemMatchOperator;
 
     typedef struct ExpressionClause
     {

@@ -58,6 +58,26 @@ createValueOperator(ValueOperatorType op, LeafValue * value)
     return (Operator *) new_op;
 }
 
+Operator *
+createElemMatchOperatorOpObject(OperatorObject *oob)
+{
+    ElemMatchOperator *new_op = (ElemMatchOperator *) palloc(sizeof(ElemMatchOperator));
+    new_op->type = EOP;  
+    new_op->typeOfValue = E_OP_OBJECT;
+    new_op->operatorOpbject = oob;
+    return (Operator *) new_op;
+}
+
+Operator *
+createElemMatchOperatorExpression(Expression *expression)
+{
+    ElemMatchOperator *new_op = (ElemMatchOperator *) palloc(sizeof(ElemMatchOperator));
+    new_op->type = EOP;  
+    new_op->typeOfValue = E_EXPRESSION;
+    new_op->expression = expression;
+    return (Operator *) new_op;
+}
+
 LeafValue *
 createStringValue(char *str)
 {

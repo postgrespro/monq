@@ -13,6 +13,10 @@ extern Operator *createArrayOperator(ArrayOperatorType op, MArray *ar);
 
 extern Operator *createValueOperator(ValueOperatorType op, LeafValue *value);
 
+extern Operator *createElemMatchOperatorExpression(Expression *expression);
+
+extern Operator *createElemMatchOperatorOpObject(OperatorObject *oob);
+
 extern LeafValue *createStringValue(char *str);
 
 extern LeafValue *createDoubleValue(char* d);

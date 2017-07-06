@@ -76,3 +76,6 @@ select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $text: { $search: "
 select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $text: { $search: "qw" } } }' :: mquery;
 select '{"a": { "qwerty" : 5} }'::jsonb <=> '{ "a.qwerty" : { $eq: 6 } }';
 select '{"a": { "qwerty" : { "asdfgh" : { "fgfhg" : 5 } } } }'::jsonb <=> '{ "a.qwerty.asdfgh.fgfhg" : { $eq: 5 } }';
+select '{ "_id" : 3, "results" : [ { "product" : "abc", "score" : 7 }, { "product" : "abc", "score" : 8 } ] }' <=> '{ results: { $elemMatch: { product: "abc" } } }' :: mquery;
+select '{ "_id" : 3, "results" : [ 81, 84, 83] }' <=> '{ results: { $elemMatch: { $gte: 80, $lt: 85 } } }' :: mquery;
+select '{ "_id" : 3, "results" : [ 81, 86, 83] }' <=> '{ results: { $elemMatch: { $gte: 80, $lt: 85 } } }' :: mquery;

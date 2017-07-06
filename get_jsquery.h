@@ -36,6 +36,8 @@
 	//Not operator
 	extern char *getNotOperator(char *key, NotOperator *notOperator);
 
+	extern char *getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator);
+
 	//Arrray operator
 	extern char *getArrayOperator(char *key, ArrayOperator *arOperator);
 

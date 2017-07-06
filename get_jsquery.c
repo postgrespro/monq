@@ -108,20 +108,40 @@ getValueOperator(char *key, ValueOperator *valOperator)
 }
 
 char *
+getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator)
+{
+    char *value = NULL;
+    
+    switch(elemMatchOperator->typeOfValue)
+    {
+        case E_EXPRESSION:
+            value = getExpression(elemMatchOperator->expression);
+            break;
+        case E_OP_OBJECT:
+            value = getOperatorObject("$",elemMatchOperator->operatorOpbject);
+            break;
+    }
+
+    return sconcat2("%s.#:(%s)", key, value, 5);
+}
+
+char *
 getOperator(char *key, Operator *operator)
 {
     switch(operator->type)
     {
         case NOP :
-            return getNotOperator(key, (NotOperator*) operator );
+            return getNotOperator(key, (NotOperator*) operator);
         case MOP :
             elog(ERROR, "MongoDB module operator is not supported by jsquery");
         case AOP :
-            return getArrayOperator(key, (ArrayOperator*) operator );
+            return getArrayOperator(key, (ArrayOperator*) operator);
         case VOP :
-            return getValueOperator(key, (ValueOperator*) operator );
+            return getValueOperator(key, (ValueOperator*) operator);
+        case EOP :
+            return getElemMatchOperator(key, (ElemMatchOperator*) operator);
         default  :
-            return NULL;
+            elog(ERROR, "This mongoDB operator is not supported by jsquery");
     }
 }
 
