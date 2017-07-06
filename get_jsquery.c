@@ -154,7 +154,7 @@ getNotOperator(char *key, NotOperator *notOperator)
 char *
 getOperatorObject(char *key, OperatorObject *opObject)
 {
-    char        *buf = "";
+    char        *buf = NULL;
     ListCell    *cell;
     bool         first = true;
 
@@ -212,7 +212,7 @@ getExpressionOperator(ExpressionOperatorType type)
 char *
 getExpressionClause(ExpressionClause* expClause)
 {
-    char        *buf = "";
+    char        *buf = NULL;
     char        *expOperator = getExpressionOperator(expClause->op);
     ListCell    *cell;
     bool         first = true;
@@ -264,7 +264,7 @@ getClause(Clause *clause)
 char *
 getExpression(Expression *expression)
 {
-    char        *buf = "";
+    char        *buf = NULL;
     ListCell    *cell;
     bool         first = true;
 
@@ -305,7 +305,7 @@ getLeafValue(LeafValue *value)
 char *
 getArraySequence(MArray *marray)
 { 
-    char        *buf = "";
+    char        *buf = NULL;
     ListCell    *cell;
     bool         first = true;
     
