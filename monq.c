@@ -16,6 +16,7 @@
 #include "utils/fmgroids.h"
 #include "utils/jsonb.h"
 #include "utils/lsyscache.h"
+#include "utils/memutils.h"
 #include "utils/rel.h"
 
 #include "monq.h"
@@ -23,9 +24,9 @@
 
 #define JSQUERY_EXTENSION_NAME   "jsquery"
 
-FmgrInfo   *funcJJE;
-FmgrInfo   *funcJI;
-FmgrInfo   *funcJO;
+FmgrInfo   *funcJJE = NULL;
+FmgrInfo   *funcJI = NULL;
+FmgrInfo   *funcJO = NULL;
 
 PG_MODULE_MAGIC;
 
@@ -158,14 +159,20 @@ callJsquery_in(char *query)
 {
     if(funcJI == NULL)
     {
-        Oid         functionOid;
-        Oid         funcargtypes[1];
+        MemoryContext   oldcxt;
+        FmgrInfo       *finfo;
+        Oid             functionOid;
+        Oid             funcargtypes[1];
 
-        funcJI = palloc0(sizeof(FmgrInfo));
+        oldcxt = MemoryContextSwitchTo(TopMemoryContext);
+
+        finfo = palloc0(sizeof(FmgrInfo));
         funcargtypes[0] = CSTRINGOID;
         functionOid = LookupFuncName(get_function_name("jsquery_in"), 1, funcargtypes, false);
+        fmgr_info(functionOid, finfo);
 
-        fmgr_info(functionOid, funcJI); 
+        MemoryContextSwitchTo(oldcxt);
+        funcJI = finfo;
     }
     return FunctionCall1(funcJI, PointerGetDatum(query));    
 }
@@ -175,14 +182,20 @@ callJsquery_out(Datum jsquery_query)
 {
     if(funcJO == NULL)
     {
-        Oid         functionOid;
-        Oid         funcargtypes[1];
+        MemoryContext   oldcxt;
+        FmgrInfo       *finfo;
+        Oid             functionOid;
+        Oid             funcargtypes[1];
 
-        funcJO = palloc0(sizeof(FmgrInfo));
+        oldcxt = MemoryContextSwitchTo(TopMemoryContext);
+
+        finfo = palloc0(sizeof(FmgrInfo));
         funcargtypes[0] = CSTRINGOID;
         functionOid = LookupFuncName(get_function_name("jsquery_out"), 1, funcargtypes, false);
+        fmgr_info(functionOid, finfo);
 
-        fmgr_info(functionOid, funcJO); 
+        MemoryContextSwitchTo(oldcxt);
+        funcJO = finfo;
     }
 
     return FunctionCall1(funcJO, jsquery_query);
@@ -192,16 +205,22 @@ static Datum
 callJsquery_jsonb_exec(Datum jsonb_data, Datum jsquery_query)
 {
     if(funcJJE == NULL)
-    {    
-        Oid         functionOid;
-        Oid         funcargtypes[2];
-        
-        funcJJE = palloc0(sizeof(FmgrInfo));
+    {
+        MemoryContext   oldcxt;
+        FmgrInfo       *finfo;
+        Oid             functionOid;
+        Oid             funcargtypes[2];
+
+        oldcxt = MemoryContextSwitchTo(TopMemoryContext);
+
+        finfo = palloc0(sizeof(FmgrInfo));
         funcargtypes[0] = JSONBOID;
         funcargtypes[1] = TypenameGetTypid("jsquery");
         functionOid = LookupFuncName( get_function_name("json_jsquery_exec"), 2, funcargtypes, false);
+        fmgr_info(functionOid, finfo);
 
-        fmgr_info(functionOid, funcJJE); 
+        MemoryContextSwitchTo(oldcxt);
+        funcJJE = finfo;
     }
     return FunctionCall2(funcJJE, jsonb_data, jsquery_query);
 }
