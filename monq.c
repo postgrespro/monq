@@ -23,6 +23,10 @@
 
 #define JSQUERY_EXTENSION_NAME   "jsquery"
 
+FmgrInfo   *funcJJE;
+FmgrInfo   *funcJI;
+FmgrInfo   *funcJO;
+
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(mquery_in);
@@ -152,42 +156,52 @@ get_function_name(char *functionName)
 static Datum
 callJsquery_in(char *query)
 {
-    Oid         functionOid;
-    FmgrInfo   *procedure = palloc0(sizeof(FmgrInfo));
-    Oid         funcargtypes[1];
+    if(funcJI == NULL)
+    {
+        Oid         functionOid;
+        Oid         funcargtypes[1];
 
-    funcargtypes[0] = CSTRINGOID;
-    functionOid = LookupFuncName(get_function_name("jsquery_in"), 1, funcargtypes, false);
+        funcJI = palloc0(sizeof(FmgrInfo));
+        funcargtypes[0] = CSTRINGOID;
+        functionOid = LookupFuncName(get_function_name("jsquery_in"), 1, funcargtypes, false);
 
-    fmgr_info(functionOid, procedure); 
-    return FunctionCall1(procedure, PointerGetDatum(query));    
+        fmgr_info(functionOid, funcJI); 
+    }
+    return FunctionCall1(funcJI, PointerGetDatum(query));    
 }
 
 static Datum
 callJsquery_out(Datum jsquery_query)
 {
-    Oid         functionOid;
-    FmgrInfo   *procedure = palloc0(sizeof(FmgrInfo));
-    Oid         funcargtypes[1];
+    if(funcJO == NULL)
+    {
+        Oid         functionOid;
+        Oid         funcargtypes[1];
 
-    funcargtypes[0] = CSTRINGOID;
-    functionOid = LookupFuncName(get_function_name("jsquery_out"), 1, funcargtypes, false);
+        funcJO = palloc0(sizeof(FmgrInfo));
+        funcargtypes[0] = CSTRINGOID;
+        functionOid = LookupFuncName(get_function_name("jsquery_out"), 1, funcargtypes, false);
 
-    fmgr_info(functionOid, procedure); 
-    return FunctionCall1(procedure, jsquery_query);
+        fmgr_info(functionOid, funcJO); 
+    }
+
+    return FunctionCall1(funcJO, jsquery_query);
 }
 
 static Datum
 callJsquery_jsonb_exec(Datum jsonb_data, Datum jsquery_query)
 {
-    Oid         functionOid;
-    FmgrInfo   *procedure = palloc0(sizeof(FmgrInfo));
-    Oid         funcargtypes[2];
+    if(funcJJE == NULL)
+    {    
+        Oid         functionOid;
+        Oid         funcargtypes[2];
+        
+        funcJJE = palloc0(sizeof(FmgrInfo));
+        funcargtypes[0] = JSONBOID;
+        funcargtypes[1] = TypenameGetTypid("jsquery");
+        functionOid = LookupFuncName( get_function_name("json_jsquery_exec"), 2, funcargtypes, false);
 
-    funcargtypes[0] = JSONBOID;
-    funcargtypes[1] = TypenameGetTypid("jsquery");
-    functionOid = LookupFuncName( get_function_name("json_jsquery_exec"), 2, funcargtypes, false);
-
-    fmgr_info(functionOid, procedure); 
-    return FunctionCall2(procedure, jsonb_data, jsquery_query);
+        fmgr_info(functionOid, funcJJE); 
+    }
+    return FunctionCall2(funcJJE, jsonb_data, jsquery_query);
 }
