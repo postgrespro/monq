@@ -3,16 +3,7 @@
     #include <stdio.h>
     #include <string.h>
 
-    #include "monq_structures.h"
-
-    #include "get_jsquery.h"
-    #include "create_mquery.h"
-    #include "jsquery_calls.h"
-    #include "delete_mquery.h"
-
-    #define DatumGetMQueryP(d) ((MQuery*)DatumGetPointer(PG_DETOAST_DATUM(d)))
-    #define PG_RETURN_MQUERY(p) PG_RETURN_POINTER(p)
-    #define PG_GETARG_MQUERY(x) DatumGetMQueryP(PG_GETARG_DATUM(x))
+    #include "monq.h"
 
     MQuery *RET;
 
@@ -28,6 +19,17 @@
     { 
         elog(ERROR,"%s",s);
         exit(0);
+    }
+
+    MQuery*
+    parsemquery(char *str)
+    {
+        YY_BUFFER_STATE  buffer = yy_scan_string(str);
+        
+        yyparse();
+        yy_delete_buffer(buffer);
+
+        return RET;    
     }
 %}
 
@@ -235,81 +237,3 @@ LEAF_VALUE              : INT         { $$ = createIntegerValue($1); }
 
 /* END OF SECTION */
 %%
-
-PG_MODULE_MAGIC;
-
-PG_FUNCTION_INFO_V1(mquery_in);
-Datum
-mquery_in(PG_FUNCTION_ARGS)
-{
-    char            *input=PG_GETARG_CSTRING(0);
-    YY_BUFFER_STATE  buffer = yy_scan_string(input);
-    
-    yyparse();
-    yy_delete_buffer(buffer);
-       
-    PG_RETURN_MQUERY(RET);
-}
-
-/*  
-    Transform mongoDB query tree to jsquery query
-    and call jsquery_out function of jsquery extension.
-*/
-PG_FUNCTION_INFO_V1(mquery_out);
-Datum
-mquery_out(PG_FUNCTION_ARGS)
-{
-    MQuery      *input=PG_GETARG_MQUERY(0);
-    char        *JSQUERY_QUERY = getJsquery(input);
-    Datum        jsquery_object = callJsquery_in(JSQUERY_QUERY);
-
-    deleteMquery(input);
-
-    PG_RETURN_CSTRING(callJsquery_out(jsquery_object));
-}
-
-/*  
-    Function for mongoDB exec. 
-    On input of function pass jsonb and mquery.
-    Mdbquery transform to jsquery and pass to 
-    son_jsquery_exec function of JSquery extension.
-*/
-PG_FUNCTION_INFO_V1(json_mquery_exec);
-Datum
-json_mquery_exec(PG_FUNCTION_ARGS)
-{
-    Jsonb       *jb = PG_GETARG_JSONB(0);
-    MQuery      *mq = PG_GETARG_MQUERY(1);
-    char        *JSQUERY_QUERY = getJsquery(mq);
-    Datum        js_query = callJsquery_in(JSQUERY_QUERY);
-
-    deleteMquery(mq);
-
-    PG_FREE_IF_COPY(jb, 0);
-    PG_FREE_IF_COPY(mq, 1);
-
-    return callJsquery_jsonb_exec(PointerGetDatum(jb), js_query);
-}
-
-/*  
-    Function for mongoDB exec. 
-    On input of function pass jsonb and mquery.
-    Mdbquery transform to jsquery and pass to 
-    son_jsquery_exec function of JSquery extension.
-*/
-PG_FUNCTION_INFO_V1(mquery_json_exec);
-Datum
-mquery_json_exec(PG_FUNCTION_ARGS)
-{
-    MQuery      *mq = PG_GETARG_MQUERY(0);
-    Jsonb       *jb = PG_GETARG_JSONB(1);
-    char        *JSQUERY_QUERY = getJsquery(mq);
-    Datum        js_query = callJsquery_in(JSQUERY_QUERY);
-
-    deleteMquery(mq);
-
-    PG_FREE_IF_COPY(mq, 0);
-    PG_FREE_IF_COPY(jb, 1);
-
-    return callJsquery_jsonb_exec(PointerGetDatum(jb), js_query);
-} 

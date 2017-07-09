@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "monq_structures.h"
-#include "create_mquery.h"
+
 
 MArray *
 createNewArray(List *arrayList) 
