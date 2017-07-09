@@ -2,11 +2,33 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "monq_structures.h"
-#include "get_jsquery.h"
+#include "monq.h"
 
-//Function for concatination 1 string with form
-char* 
+
+static char *getExpression(Expression * expression);
+static char *getClause(Clause *clause);
+static char *getExpressionClause(ExpressionClause* expClause);
+static char *getExpressionOperator(ExpressionOperatorType type);
+static char *getTextClause(TextClause* textClause);
+static char *getLeafClause(LeafClause *leafClause);
+static char *getLeafClauseValue(char *key, MValue *value);
+static char *getLeafValueEq(char *key, LeafValue *leafValue);
+static char *getOperatorObject(char *key, OperatorObject *opObject);
+static char *getOperator(char *key, Operator *operator);
+static char *getNotOperator(char *key, NotOperator *notOperator);
+static char *getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator);
+static char *getArrayOperator(char *key, ArrayOperator *arOperator);
+static char *getArraySequence(MArray *marray);
+static char *getLeafValue(LeafValue *value);
+static char *getValueOperator(char *key, ValueOperator *valOperator);
+static char *getValueOperatorType(ValueOperatorType type);
+static char *getValueType(char *type);
+
+
+/*
+ * Function for concatination 1 string with form
+ */
+char *
 sconcat1(char *form, char *s1, int plus) 
 {
     size_t   len1 = strlen(s1);               
@@ -17,8 +39,10 @@ sconcat1(char *form, char *s1, int plus)
     return result;
 }
 
-//Function for concatination 2 strings with form
-static char* 
+/*
+ * Function for concatination 2 strings with form
+ */
+static char *
 sconcat2(char *form, char *s1, char *s2, int plus) 
 {
     size_t   len1 = strlen(s1);
@@ -30,8 +54,10 @@ sconcat2(char *form, char *s1, char *s2, int plus)
     return result;
 }
 
-//Function for concatination 3 strings with form
-static char* 
+/*
+ * Function for concatination 3 strings with form
+ */
+static char *
 sconcat3(char *form, char *s1, char *s2, char *s3, int plus) 
 {
     size_t   len1 = strlen(s1);
@@ -44,7 +70,7 @@ sconcat3(char *form, char *s1, char *s2, char *s3, int plus)
     return result;
 }
 
-char *
+static char *
 getValueOperatorType(ValueOperatorType type)
 {
     switch(type)
@@ -72,8 +98,10 @@ getValueOperatorType(ValueOperatorType type)
     }
 }
 
-// Return type in jsquery format 
-char *
+/*
+ * Return type in jsquery format
+ */
+static char *
 getValueType(char *type)
 {
     if(strcmp(type,"\"string\"") == 0)              return " IS STRING";
@@ -91,7 +119,7 @@ getValueType(char *type)
         elog(ERROR, "Jsquery is not supported MongoDB %s value type", type);
 }
 
-char *
+static char *
 getValueOperator(char *key, ValueOperator *valOperator)
 {
     char *opr = getValueOperatorType(valOperator->value_op);
@@ -107,7 +135,7 @@ getValueOperator(char *key, ValueOperator *valOperator)
         return sconcat3("%s %s %s", key, opr, value, 2);
 }
 
-char *
+static char *
 getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator)
 {
     char *value = NULL;
@@ -125,7 +153,7 @@ getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator)
     return sconcat2("%s.#:(%s)", key, value, 5);
 }
 
-char *
+static char *
 getOperator(char *key, Operator *operator)
 {
     switch(operator->type)
@@ -145,13 +173,13 @@ getOperator(char *key, Operator *operator)
     }
 }
 
-char * 
+static char * 
 getNotOperator(char *key, NotOperator *notOperator)
 {
     return sconcat1("NOT (%s)", getOperator(key,notOperator->op), 6);
 }
 
-char *
+static char *
 getOperatorObject(char *key, OperatorObject *opObject)
 {
     char        *buf = NULL;
@@ -172,25 +200,25 @@ getOperatorObject(char *key, OperatorObject *opObject)
     return buf;
 }
 
-char *
+static char *
 getLeafValueEq(char *key, LeafValue *leafValue)
 {
     return sconcat2("%s = %s", key, getLeafValue(leafValue), 3);
 }
 
-char *
+static char *
 getLeafClauseValue(char *key, MValue *value)
 { 
     return (value->type ? getOperatorObject(key, value->oob) : getLeafValueEq(key, value->lv));
 }
 
-char *
+static char *
 getLeafClause(LeafClause *leafClause)
 {
     return getLeafClauseValue(leafClause->key, leafClause->vl);
 }
 
-char *
+static char *
 getExpressionOperator(ExpressionOperatorType type)
 {
     switch(type)
@@ -209,7 +237,7 @@ getExpressionOperator(ExpressionOperatorType type)
     return NULL;
 }
 
-char *
+static char *
 getExpressionClause(ExpressionClause* expClause)
 {
     char        *buf = NULL;
@@ -235,13 +263,13 @@ getExpressionClause(ExpressionClause* expClause)
     return buf;
 }
 
-char *
+static char *
 getTextClause(TextClause *textClause)
 {
     return sconcat1("* = %s", textClause->search_str, 4);
 }
 
-char *
+static char *
 getClause(Clause *clause)
 {  
     switch(clause->type)
@@ -261,7 +289,7 @@ getClause(Clause *clause)
     }
 }
 
-char *
+static char *
 getExpression(Expression *expression)
 {
     char        *buf = NULL;
@@ -282,7 +310,7 @@ getExpression(Expression *expression)
     return buf;
 }
 
-char *
+static char *
 getLeafValue(LeafValue *value)
 {
     switch(value->type)
@@ -302,7 +330,7 @@ getLeafValue(LeafValue *value)
     }
 }
 
-char *
+static char *
 getArraySequence(MArray *marray)
 { 
     char        *buf = NULL;
@@ -323,7 +351,7 @@ getArraySequence(MArray *marray)
     return buf;
 }
 
-char *
+static char *
 getArrayOperator(char *key, ArrayOperator *arOperator)
 {        
     char *ar = getArraySequence(arOperator->ar);

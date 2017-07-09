@@ -2,28 +2,38 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "monq_structures.h"
-
+#include "c.h"
+#include "postgres.h"
 #include "access/gin.h"
 #include "utils/numeric.h"
 
-#include "delete_mquery.h"
+#include "monq_structures.h"
 
 
-void
-deleteValueType(char *value_type)
-{
-   free(value_type);
-}
+static void deleteValueOperator(ValueOperator *vop);
+static void deleteOperator(Operator *op);
+static void deleteNotOperator(NotOperator *op);
+static void deleteElemMatchOperator(ElemMatchOperator *elemMatchOperator);
+static void deleteOperatorObject(OperatorObject *op_object);
+static void deleteLeafClauseValue(MValue *val);
+static void deleteLeafClause(LeafClause *lc);
+static void deleteExpressionClause(ExpressionClause* expClause);
+static void deleteTextClause(TextClause *tClause);
+static void deleteClause(Clause *cl);
+static void deleteExpression(Expression * ex);
+static void deleteLeafValue(LeafValue *value);
+static void deleteArraySequence(MArray *ar);
+static void deleteArrayOperator(ArrayOperator *aop);
 
-void
+
+static void
 deleteValueOperator(ValueOperator *vop)
 {   
     deleteLeafValue(vop->value);
     pfree(vop);
 }
 
-void
+static void
 deleteOperator(Operator *operator)
 {
     switch(operator->type)
@@ -45,7 +55,7 @@ deleteOperator(Operator *operator)
     }
 }
 
-void
+static void
 deleteElemMatchOperator(ElemMatchOperator *elemMatchOperator)
 {
     switch(elemMatchOperator->typeOfValue)
@@ -59,14 +69,14 @@ deleteElemMatchOperator(ElemMatchOperator *elemMatchOperator)
     }
 }
 
-void 
+static void 
 deleteNotOperator(NotOperator *op)
 {
     deleteOperator(op->op);
     pfree(op);
 }
 
-void
+static void
 deleteOperatorObject(OperatorObject *op_object)
 {
     List        *operatorList;
@@ -81,20 +91,20 @@ deleteOperatorObject(OperatorObject *op_object)
     pfree(op_object);
 }
 
-void
+static void
 deleteLeafClauseValue(MValue *value)
 { 
     value->type ? deleteOperatorObject(value->oob) : deleteLeafValue(value->lv);
 }
 
-void
+static void
 deleteLeafClause(LeafClause *lc)
 {
     deleteLeafClauseValue(lc->vl);
     pfree(lc);
 }
 
-void
+static void
 deleteExpressionClause(ExpressionClause* expClause)
 {
     List        *expressionList;
@@ -109,13 +119,13 @@ deleteExpressionClause(ExpressionClause* expClause)
     pfree(expClause);
 }
 
-void
+static void
 deleteTextClause(TextClause *textClause)
 {
     pfree(textClause);
 }
 
-void
+static void
 deleteClause(Clause *clause)
 {  
     switch(clause->type)
@@ -134,7 +144,7 @@ deleteClause(Clause *clause)
     }
 }
 
-void
+static void
 deleteExpression(Expression * expression)
 {
     List        *clauseList = expression->clauseList;
@@ -146,7 +156,7 @@ deleteExpression(Expression * expression)
     pfree(expression);
 }
 
-void
+static void
 deleteLeafValue(LeafValue *value)
 {
     if(value->type == A)
@@ -154,7 +164,7 @@ deleteLeafValue(LeafValue *value)
     pfree(value);
 }
 
-void
+static void
 deleteArraySequence(MArray *marray)
 { 
     List        *arrayList = marray->arrayList;
@@ -167,7 +177,7 @@ deleteArraySequence(MArray *marray)
     pfree(marray);
 }
 
-void
+static void
 deleteArrayOperator(ArrayOperator *arrayOperator)
 {        
     deleteArraySequence(arrayOperator->ar);
