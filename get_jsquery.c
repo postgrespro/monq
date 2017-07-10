@@ -216,7 +216,6 @@ getLeafClause(StringInfo strInfo, LeafClause *leafClause)
 static void
 getExpressionClause(StringInfo strInfo, ExpressionClause* expClause)
 {
-    char        *expOperator = NULL; 
     ListCell    *cell;
     bool         first = true;
 
