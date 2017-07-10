@@ -218,6 +218,7 @@ getExpressionClause(StringInfo strInfo, ExpressionClause* expClause)
 {
     ListCell    *cell;
     bool         first = true;
+    char		*expOperator = NULL;
 
     switch(expClause->op)
     {
