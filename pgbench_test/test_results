@@ -1,0 +1,31 @@
+JSQUERY TEST
+
+home@home-A8He:~$ pgbench -h localhost -f ~/JsQuery_test.sql -U postgres -t 50 -c 1 test2
+Password: 
+starting vacuum...end.
+transaction type: /home/home/JsQuery_test.sql
+scaling factor: 1
+query mode: simple
+number of clients: 1
+number of threads: 1
+number of transactions per client: 50
+number of transactions actually processed: 50/50
+latency average = 5.004 ms
+tps = 199.831342 (including connections establishing)
+tps = 250.782441 (excluding connections establishing)
+
+MONQ TEST
+
+home@home-A8He:~$ pgbench -h localhost -f ~/MonQ_test.sql -U postgres -t 50 -c 1 test2
+Password: 
+starting vacuum...end.
+transaction type: /home/home/MonQ_test.sql
+scaling factor: 1
+query mode: simple
+number of clients: 1
+number of threads: 1
+number of transactions per client: 50
+number of transactions actually processed: 50/50
+latency average = 5.133 ms
+tps = 194.800388 (including connections establishing)
+tps = 244.025047 (excluding connections establishing)
