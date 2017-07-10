@@ -46,12 +46,15 @@ Typical installation procedure may look like this:
 
 MonQ extension contains:
 * `mquery` - datatype which represents MongoDB query in tree structure;
-* `<=>` - maching operator which take like arguments jsonb document and mongoDB query. This operator have 2 variants of representation: `jsonb <=> mquery` and `mquery <=> jsonb`.
+* `<=>` - maching operator which take like arguments jsonb document and 
+mongoDB query. This operator have 2 variants of representation: 
+`jsonb <=> mquery` and `mquery <=> jsonb`.
 
 Example of query:
 
 ```
-select '{ "a" : [ "ssl","security", "pattern"] }'::jsonb <=> '{ a: { $all: [ "ssl","security"] } }'::mquery;
+select '{ "a" : [ "ssl","security", "pattern"] }'::jsonb <=>
+'{ a: { $all: [ "ssl","security"] } }'::mquery;
 ```
 
 This mongoDB query:
@@ -65,7 +68,8 @@ transformed to this JsQuery query:
 ```
 a @> [ "ssl","security"]
 ```
-and passed to JsQuery execution functions with jsonb document. Execution function return `true` or `false`dependently of result.
+and passed like arguments to JsQuery execution functions with jsonb document. 
+Execution function return `true` or `false`dependently of result.
 
 ```
  ?column? 
@@ -74,9 +78,14 @@ and passed to JsQuery execution functions with jsonb document. Execution functio
 (1 row)
 ```
 
+You cah use key `a` without quotes, but if it complicated key `"a.b.c.qwerty.d"`
+you need to use them. 
+
+
 ### MongoDB operators supported by MonQ
 
-MonQ is limited by opportunities JsQuery language, but support main part of MongoDB query operators.
+MonQ is limited by opportunities JsQuery language, but support main 
+part of MongoDB query operators.
 
 #### Comparison operators:
 * `$eq` - supported;
@@ -86,86 +95,43 @@ MonQ is limited by opportunities JsQuery language, but support main part of Mong
 * `$gt` - supported;
 * `$gte` - supported;
 * `$in` - supported;
-* `$nin` - supported;
-* All operators is supported.
+* `$nin` - supported.
+
 #### Logical operators:
-* All operators is supported.
+* `$and` - supported;
+* `$or` - supported;
+* `$not` - supported;
+* `$nor` - supported.
+
 #### Element operators:
-* All operators is supported.
+* `$exists` - supported;
+* `$type` - supported.
+
 #### Evaluation operators:
 * `$mod` - not supported;
 * `$regex` - not supported;
 * `$text` - supported;
 * `$where` - not supported.
+
 #### Bitwise operators:
 * All operators is not supported.
+
 #### Array operators:
-* All operators is supported.
+* `$all` - supported;
+* `$elemMatch` - supported;
+* `$size` - supported.
+
 #### Comment operators:
 * All operators is not supported.
+
 #### Geospatial operators:
 * All operators is not supported.
+
 #### Projextion operators:
 * All operators is not supported.
 
-  whole JSON query
-as a single value. The query is an expression on JSON-document values.
-MonQ   
-
- * `x = "abc"` – value of key "x" is equal to "abc";
- * `$ @> [4, 5, "zzz"]` – the JSON document is an array containing values
-    4, 5 and "zzz";
- * `"abc xyz" >= 10` – value of key "abc xyz" is greater than or equal to 10;
- * `volume IS NUMERIC` – type of key "volume" is numeric.
- * `$ = true` – the whole JSON document is just a true.
- * `similar_ids.@# > 5` – similar\_ids is an array or object of length greater
-   than 5;
- * `similar_product_ids.# = "0684824396"` – array "similar\_product\_ids"
-   contains string "0684824396".
- * `*.color = "red"` – there is object somewhere which key "color" has value
-   "red".
- * `foo = *` – key "foo" exists in object.
-
-Path selects set of JSON values to be checked using given operators. In
-the simplest case path is just an key name. In general path is key names and
-placeholders combined by dot signs. Path can use following placeholders:
-
- * `#` – any index of array;
- * `#N` – N-th index of array;
- * `%` – any key of object;
- * `*` – any sequence of array indexes and object keys;
- * `@#` – length of array or object, could be only used as last component of
-    path;
- * `$` – the whole JSON document as single value, could be only the whole path.
-
-Expression is true when operator is true against at least one value selected
-by path.
-
-Key names could be given either with or without double quotes. Key names
-without double quotes shouldn't contain spaces, start with number or concur
-with jsquery keyword.
-
-The supported binary operators are:
-
- * Equality operator: `=`;
- * Numeric comparison operators: `>`, `>=`, `<`, `<=`;
- * Search in the list of scalar values using `IN` operator;
- * Array comparison operators: `&&` (overlap), `@>` (contains),
-   `<@` (contained in).
-
-The supported unary operators are:
-
- * Check for existence operator: `= *`;
- * Check for type operators: `IS ARRAY`, `IS NUMERIC`, `IS OBJECT`, `IS STRING`
-   and `IS BOOLEAN`.
-
-Expressions could be complex. Complex expression is a set of expressions
-combined by logical operators (`AND`, `OR`, `NOT`) and grouped using braces.
-
-Examples of complex expressions are given below.
-
- * `a = 1 AND (b = 2 OR c = 3) AND NOT d = 1`
- * `x.% = true OR x.# = true`
+Examples of queries with all this operators you can find in the file 
+[sql/sql_test.sql](https://github.com/NikitOS94/MonQ/blob/master/sql/monq_test.sql)
 
 Contribution
 ------------
