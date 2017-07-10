@@ -1,6 +1,7 @@
-## MonQ - postgreSQL extension for MongoDB query support
+## MonQ 
+postgreSQL extension for MongoDB query support
 
-## Introduction
+### Introduction
 
 MonQ – is a postgreSQL extension which allow use mongoDB query language
 to query jsonb data type, introduced in PostgreSQL release 9.4.
@@ -133,8 +134,8 @@ part of MongoDB query operators.
 Examples of queries with all this operators you can find in the file 
 [sql/sql_test.sql](https://github.com/NikitOS94/MonQ/blob/master/sql/monq_test.sql)
 
-Contribution
-------------
+### Contribution
+
 Please, notice, that MonQ is still under development and while it's stable
 and tested, it may contains some bugs. Don't hesitate to raise issues at 
 github with your bug reports.
