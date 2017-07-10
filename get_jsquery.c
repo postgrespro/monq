@@ -5,24 +5,23 @@
 #include "monq.h"
 
 
-static char *getExpression(Expression * expression);
-static char *getClause(Clause *clause);
-static char *getExpressionClause(ExpressionClause* expClause);
-static char *getExpressionOperator(ExpressionOperatorType type);
-static char *getTextClause(TextClause* textClause);
-static char *getLeafClause(LeafClause *leafClause);
-static char *getLeafClauseValue(char *key, MValue *value);
-static char *getLeafValueEq(char *key, LeafValue *leafValue);
-static char *getOperatorObject(char *key, OperatorObject *opObject);
-static char *getOperator(char *key, Operator *operator);
-static char *getNotOperator(char *key, NotOperator *notOperator);
-static char *getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator);
-static char *getArrayOperator(char *key, ArrayOperator *arOperator);
-static char *getArraySequence(MArray *marray);
-static char *getLeafValue(LeafValue *value);
-static char *getValueOperator(char *key, ValueOperator *valOperator);
-static char *getValueOperatorType(ValueOperatorType type);
-static char *getValueType(char *type);
+static void getExpression(StringInfo strInfo, Expression * expression);
+static void getClause(StringInfo strInfo, Clause *clause);
+static void getExpressionClause(StringInfo strInfo, ExpressionClause* expClause);
+static void getTextClause(StringInfo strInfo, TextClause* textClause);
+static void getLeafClause(StringInfo strInfo, LeafClause *leafClause);
+static void getLeafClauseValue(StringInfo strInfo, char *key, MValue *value);
+static void getLeafValueEq(StringInfo strInfo, char *key, LeafValue *leafValue);
+static void getOperatorObject(StringInfo strInfo, char *key, OperatorObject *opObject);
+static void getOperator(StringInfo strInfo, char *key, Operator *operator);
+static void getNotOperator(StringInfo strInfo, char *key, NotOperator *notOperator);
+static void getElemMatchOperator(StringInfo strInfo, char *key, ElemMatchOperator *elemMatchOperator);
+static void getArrayOperator(StringInfo strInfo, char *key, ArrayOperator *arOperator);
+static void getArraySequence(StringInfo strInfo, MArray *marray);
+static void getLeafValue(StringInfo strInfo, LeafValue *value);
+static void getValueOperator(StringInfo strInfo, char *key, ValueOperator *valOperator);
+static void getValueOperatorType(StringInfo strInfo, ValueOperatorType type);
+static void getValueType(StringInfo strInfo, char *type);
 
 
 /*
@@ -39,59 +38,35 @@ sconcat1(char *form, char *s1, int plus)
     return result;
 }
 
-/*
- * Function for concatination 2 strings with form
- */
-static char *
-sconcat2(char *form, char *s1, char *s2, int plus) 
-{
-    size_t   len1 = strlen(s1);
-    size_t   len2 = strlen(s2);                      
-    char    *result = palloc(len1 + len2 + 1 + plus);
-    
-    sprintf(result,form,s1,s2);  
-
-    return result;
-}
-
-/*
- * Function for concatination 3 strings with form
- */
-static char *
-sconcat3(char *form, char *s1, char *s2, char *s3, int plus) 
-{
-    size_t   len1 = strlen(s1);
-    size_t   len2 = strlen(s2); 
-    size_t   len3 = strlen(s3);                      
-    char    *result = palloc(len1 + len2 + len3 + 1 + plus);
-
-    sprintf(result, form, s1, s2, s3);  
-
-    return result;
-}
-
-static char *
-getValueOperatorType(ValueOperatorType type)
+static void
+getValueOperatorType(StringInfo strInfo, ValueOperatorType type)
 {
     switch(type)
     {
         case _LESS :
-            return "<";
+            appendStringInfo(strInfo, "<");
+            break;
         case _EQ :
         case _NOTEQ :
-            return "=";
+            appendStringInfo(strInfo, "=");
+            break;
         case _LESSEQ :
-            return "<=";
+            appendStringInfo(strInfo, "<=");
+            break;
         case _GREAT :
-            return ">";
+            appendStringInfo(strInfo, ">");
+            break;
         case _GREATEQ :
-            return ">=";
+            appendStringInfo(strInfo, ">=");
+            break;
         case _TYPE :
-            return "";
+            break;
         case _SIZE :
-            return ".@# =";
+            appendStringInfo(strInfo, ".@# =");
+            break;
         case _EXISTS :
-            return "= *";
+            appendStringInfo(strInfo, "= *");
+            break;
         default :
             elog(ERROR,"This value operator is not supported");
             break;
@@ -101,88 +76,115 @@ getValueOperatorType(ValueOperatorType type)
 /*
  * Return type in jsquery format
  */
-static char *
-getValueType(char *type)
+static void
+getValueType(StringInfo strInfo, char *type)
 {
-    if(strcmp(type,"\"string\"") == 0)              return " IS STRING";
+    if(strcmp(type,"\"string\"") == 0)              appendStringInfo(strInfo, " IS STRING");
     else if(
                 strcmp(type, "\"double\"") == 0 || 
                 strcmp(type, "\"int\"") == 0 || 
                 strcmp(type, "\"long\"") == 0 || 
                 strcmp(type, "\"decimal\"") == 0
-            )                                             return " IS NUMERIC";
+            )                                       appendStringInfo(strInfo, " IS NUMERIC");
                              
-    else if(strcmp(type, "\"array\"") == 0)         return " IS ARRAY";
-    else if(strcmp(type, "\"object\"") == 0)        return " IS OBJECT";
-    else if(strcmp(type, "\"bool\"") == 0)          return " IS BOOLEAN";
+    else if(strcmp(type, "\"array\"") == 0)         appendStringInfo(strInfo, " IS ARRAY");
+    else if(strcmp(type, "\"object\"") == 0)        appendStringInfo(strInfo, " IS OBJECT");
+    else if(strcmp(type, "\"bool\"") == 0)          appendStringInfo(strInfo, " IS BOOLEAN");
     else                                                  
         elog(ERROR, "Jsquery is not supported MongoDB %s value type", type);
 }
 
-static char *
-getValueOperator(char *key, ValueOperator *valOperator)
+static void
+getValueOperator(StringInfo strInfo, char *key, ValueOperator *valOperator)
 {
-    char *opr = getValueOperatorType(valOperator->value_op);
-    char *value = getLeafValue(valOperator->value);
-
     if(valOperator->value_op == _EXISTS)
-        return valOperator->value->b ? sconcat2("%s %s", key, opr, 1) : sconcat2("NOT (%s %s)", key, opr, 7);
+    {
+        if(valOperator->value->b)
+        {
+            appendStringInfo(strInfo, "%s", key);
+            appendStringInfo(strInfo, " ");
+            getValueOperatorType(strInfo, valOperator->value_op);
+        }
+        else
+        {
+            appendStringInfo(strInfo, "NOT (%s ", key);
+            getValueOperatorType(strInfo, valOperator->value_op);
+            appendStringInfo(strInfo, ")");
+        }
+    }
     else if(valOperator->value_op == _TYPE)
-        return sconcat2("%s %s", key, getValueType(value), 1);
+    {
+        appendStringInfo(strInfo, "%s ", key);
+        getValueType(strInfo, valOperator->value->str);
+    }
     else if(valOperator->value_op == _NOTEQ)
-        return sconcat3("NOT (%s %s %s)", key, opr, value, 8);
+    {
+        appendStringInfo(strInfo, "NOT (%s ", key);
+        getValueOperatorType(strInfo, valOperator->value_op);
+        appendStringInfo(strInfo, " ");
+        getLeafValue(strInfo, valOperator->value);
+        appendStringInfo(strInfo, ")");
+    }
     else
-        return sconcat3("%s %s %s", key, opr, value, 2);
+    {
+        appendStringInfo(strInfo, "%s ", key);
+        getValueOperatorType(strInfo, valOperator->value_op);
+        appendStringInfo(strInfo, " ");
+        getLeafValue(strInfo, valOperator->value);
+    }
 }
 
-static char *
-getElemMatchOperator(char *key, ElemMatchOperator *elemMatchOperator)
-{
-    char *value = NULL;
-    
+static void
+getElemMatchOperator(StringInfo strInfo, char *key, ElemMatchOperator *elemMatchOperator)
+{   
+    appendStringInfo(strInfo, "%s.#:(", key);
     switch(elemMatchOperator->typeOfValue)
     {
         case E_EXPRESSION:
-            value = getExpression(elemMatchOperator->expression);
+            getExpression(strInfo, elemMatchOperator->expression);
             break;
         case E_OP_OBJECT:
-            value = getOperatorObject("$",elemMatchOperator->operatorOpbject);
+            getOperatorObject(strInfo, "$",elemMatchOperator->operatorOpbject);
             break;
     }
-
-    return sconcat2("%s.#:(%s)", key, value, 5);
+    appendStringInfo(strInfo, ")");
 }
 
-static char *
-getOperator(char *key, Operator *operator)
+static void
+getOperator(StringInfo strInfo, char *key, Operator *operator)
 {
     switch(operator->type)
     {
         case NOP :
-            return getNotOperator(key, (NotOperator*) operator);
+            getNotOperator(strInfo, key, (NotOperator*) operator);
+            break;
         case MOP :
             elog(ERROR, "MongoDB module operator is not supported by jsquery");
         case AOP :
-            return getArrayOperator(key, (ArrayOperator*) operator);
+            getArrayOperator(strInfo, key, (ArrayOperator*) operator);
+            break;
         case VOP :
-            return getValueOperator(key, (ValueOperator*) operator);
+            getValueOperator(strInfo, key, (ValueOperator*) operator);
+            break;
         case EOP :
-            return getElemMatchOperator(key, (ElemMatchOperator*) operator);
+            getElemMatchOperator(strInfo, key, (ElemMatchOperator*) operator);
+            break;
         default  :
             elog(ERROR, "This mongoDB operator is not supported by jsquery");
     }
 }
 
-static char * 
-getNotOperator(char *key, NotOperator *notOperator)
+static void
+getNotOperator(StringInfo strInfo, char *key, NotOperator *notOperator)
 {
-    return sconcat1("NOT (%s)", getOperator(key,notOperator->op), 6);
+    appendStringInfo(strInfo, "NOT ("); 
+    getOperator(strInfo, key,notOperator->op);
+    appendStringInfo(strInfo, ")");
 }
 
-static char *
-getOperatorObject(char *key, OperatorObject *opObject)
+static void
+getOperatorObject(StringInfo strInfo, char *key, OperatorObject *opObject)
 {
-    char        *buf = NULL;
     ListCell    *cell;
     bool         first = true;
 
@@ -190,187 +192,211 @@ getOperatorObject(char *key, OperatorObject *opObject)
     {
         if(first)
         {
-            buf = sconcat1("(%s)", getOperator(key, ((Operator *)lfirst(cell))), 2);
+            appendStringInfo(strInfo, "("); 
+            getOperator(strInfo, key, (Operator *)lfirst(cell));
+            appendStringInfo(strInfo, ")");
             first = false;
         }
-        else           
-            buf = sconcat2("%s AND (%s)", buf, getOperator(key, ((Operator *)lfirst(cell))), 7);
+        else 
+        {          
+            appendStringInfo(strInfo, " AND ("); 
+            getOperator(strInfo, key, ((Operator *)lfirst(cell)));
+            appendStringInfo(strInfo, ")"); 
+        }
     }
-
-    return buf;
 }
 
-static char *
-getLeafValueEq(char *key, LeafValue *leafValue)
+static void
+getLeafValueEq(StringInfo strInfo, char *key, LeafValue *leafValue)
 {
-    return sconcat2("%s = %s", key, getLeafValue(leafValue), 3);
+    appendStringInfo(strInfo, "%s = ", key);
+    getLeafValue(strInfo, leafValue);
 }
 
-static char *
-getLeafClauseValue(char *key, MValue *value)
+static void
+getLeafClauseValue(StringInfo strInfo, char *key, MValue *value)
 { 
-    return (value->type ? getOperatorObject(key, value->oob) : getLeafValueEq(key, value->lv));
+    if(value->type) 
+        getOperatorObject(strInfo, key, value->oob);
+    else
+        getLeafValueEq(strInfo, key, value->lv);
 }
 
-static char *
-getLeafClause(LeafClause *leafClause)
+static void
+getLeafClause(StringInfo strInfo, LeafClause *leafClause)
 {
-    return getLeafClauseValue(leafClause->key, leafClause->vl);
+    getLeafClauseValue(strInfo, leafClause->key, leafClause->vl);
 }
 
-static char *
-getExpressionOperator(ExpressionOperatorType type)
+static void
+getExpressionClause(StringInfo strInfo, ExpressionClause* expClause)
 {
-    switch(type)
-    {
-        case _AND :
-            return "AND";
-        case _OR :
-            return "OR";
-        case _NOR :
-            return "OR NOT";
-        default :
-            elog(ERROR,"This expression operator is not supported");
-            break;
-    }
-
-    return NULL;
-}
-
-static char *
-getExpressionClause(ExpressionClause* expClause)
-{
-    char        *buf = NULL;
-    char        *expOperator = getExpressionOperator(expClause->op);
+    char        *expOperator = NULL; 
     ListCell    *cell;
     bool         first = true;
+
+    switch(expClause->op)
+    {
+        case _AND :
+            expOperator = "AND";
+            break;
+        case _OR :
+            expOperator = "OR";
+            break;
+        case _NOR :
+            expOperator = "OR NOT";
+            break;
+    }
 
     foreach(cell, expClause->expressionList)
     {
         if(first)
         {
-            if(expClause->op == _NOR)
-                buf = sconcat1("NOT (%s)", getExpression((Expression *)lfirst(cell)), 6);
-            else
-                buf = sconcat1("(%s)", getExpression((Expression *)lfirst(cell)), 2);
+            if(expClause->op == _NOR)   appendStringInfo(strInfo, "NOT ");
 
+            appendStringInfo(strInfo, "(");
+            getExpression(strInfo, (Expression *)lfirst(cell));
+            appendStringInfo(strInfo, ") ");
+        
             first = false;
         }
         else
-            buf = sconcat3("%s %s (%s)", buf, expOperator, getExpression((Expression *)lfirst(cell)), 4);
+        {
+            appendStringInfo(strInfo, "%s (", expOperator);
+            getExpression(strInfo, (Expression *)lfirst(cell));
+            appendStringInfo(strInfo, ") ");
+        }
     }   
-
-    return buf;
 }
 
-static char *
-getTextClause(TextClause *textClause)
+static void
+getTextClause(StringInfo strInfo, TextClause *textClause)
 {
-    return sconcat1("* = %s", textClause->search_str, 4);
+    appendStringInfo(strInfo, "* = %s", textClause->search_str);
 }
 
-static char *
-getClause(Clause *clause)
+static void
+getClause(StringInfo strInfo, Clause *clause)
 {  
     switch(clause->type)
     {
         case LEAF :
-            return getLeafClause((LeafClause*) clause);
+            getLeafClause(strInfo, (LeafClause*) clause);
+            break;
         case COMMENT :
             elog(ERROR, "MongoDB comment clause is not supported by jsquery");
         case TEXT :
-            return getTextClause((TextClause*) clause);
+            getTextClause(strInfo, (TextClause*) clause);
+            break;
         case WHERE :
             elog(ERROR, "MongoDB where clause is not supported by jsquery");
         case EXPRESSION :
-            return getExpressionClause((ExpressionClause*) clause);
+            getExpressionClause(strInfo, (ExpressionClause*) clause);
+            break;
         default:
-            return NULL;
+            break;
     }
 }
 
-static char *
-getExpression(Expression *expression)
+static void
+getExpression(StringInfo strInfo, Expression *expression)
 {
-    char        *buf = NULL;
     ListCell    *cell;
     bool         first = true;
-
+    
     foreach(cell, expression->clauseList)
     {
         if (first)
         {
-            buf = getClause((Clause *)lfirst(cell));
+            getClause(strInfo, (Clause *)lfirst(cell));
             first = false;
         }
         else
-            buf = sconcat2("%s AND %s", buf, getClause((Clause *)lfirst(cell)), 5);
+        {
+            appendStringInfo(strInfo, " AND ");
+            getClause(strInfo, (Clause *)lfirst(cell));
+        }
     }
-    
-    return buf;
 }
 
-static char *
-getLeafValue(LeafValue *value)
+static void
+getLeafValue(StringInfo strInfo, LeafValue *value)
 {
     switch(value->type)
     {
         case S :
-            return value->str;
+            appendStringInfo(strInfo, "%s", value->str);
+            break;
         case I :
-            return value->i;
+            appendStringInfo(strInfo, "%s", value->i);
+            break;
         case A :
-            return sconcat1("[%s]", getArraySequence(value->ar), 2);
+            appendStringInfo(strInfo, "[");
+            getArraySequence(strInfo, value->ar);
+            appendStringInfo(strInfo, "]");
+            break;
         case B :
-            return (value->b ? "true" : "false");
+            appendStringInfo(strInfo, "%s", (value->b ? "true" : "false"));
+            break;
         case D :
-            return value->d;
+            appendStringInfo(strInfo, "%s", value->d);
+            break;
         default :
-            return NULL;
+            break;
     }
 }
 
-static char *
-getArraySequence(MArray *marray)
+static void
+getArraySequence(StringInfo strInfo, MArray *marray)
 { 
-    char        *buf = NULL;
     ListCell    *cell;
     bool         first = true;
-    
+   
     foreach(cell, marray->arrayList)
     {
         if(first)
         {
-            buf = getLeafValue((LeafValue *)lfirst(cell));
+            getLeafValue(strInfo, (LeafValue *)lfirst(cell));
             first = false;
         }
         else
-            buf = sconcat2("%s, %s", getLeafValue((LeafValue *)lfirst(cell)), buf, 2);
+        {
+            appendStringInfo(strInfo, ", ");
+            getLeafValue(strInfo, (LeafValue *)lfirst(cell));
+        }
     }
-
-    return buf;
 }
 
-static char *
-getArrayOperator(char *key, ArrayOperator *arOperator)
+static void
+getArrayOperator(StringInfo strInfo, char *key, ArrayOperator *arOperator)
 {        
-    char *ar = getArraySequence(arOperator->ar);
-
     switch(arOperator->array_op)
     {
         case _IN :
-            return sconcat2("%s IN (%s)", key, ar, 6);
+            appendStringInfo(strInfo, "%s IN (", key);
+            getArraySequence(strInfo, arOperator->ar);
+            appendStringInfo(strInfo, ")");
+            break;
         case _NIN:
-            return sconcat2("NOT (%s IN (%s))", key, ar, 12);
+            appendStringInfo(strInfo, "NOT (%s IN (", key);
+            getArraySequence(strInfo, arOperator->ar);
+            appendStringInfo(strInfo, "))");
+            break;
         case _ALL:
-            return sconcat2("%s @> [%s]", key, ar, 6);
+            appendStringInfo(strInfo, "%s @> [", key);
+            getArraySequence(strInfo, arOperator->ar);
+            appendStringInfo(strInfo, "]");
+            break;
         default  :
-            return NULL;
-    } 
+            break;
+    }
 }
 
 char *
 getJsquery(MQuery *qu)
 {
-    return getExpression(qu->exp);
+    StringInfoData strInfo;
+    initStringInfo(&strInfo);
+    getExpression(&strInfo, qu->exp);
+    return strInfo.data;
 }
