@@ -229,7 +229,12 @@ LEAF_VALUE_LIST         : LEAF_VALUE                         { $$ = lcons($1, NU
 
 LEAF_VALUE              : INT         { $$ = createIntegerValue($1); }
                         | STRING      { $$ = createStringValue($1); }
-                        | KEY_STRING  { $$ = createStringValue(sconcat1("\"%s\"",$1,2)); }
+                        | KEY_STRING  { 
+                                            StringInfoData strf;
+                                            initStringInfo(&strf);
+                                            appendStringInfo(&strf, "\"%s\"", $1);
+                                            $$ = createStringValue(strf.data); 
+                                      }
                         | DOUBLE      { $$ = createDoubleValue($1); }
                         | ARRAY       { $$ = createArrayValue($1); }
                         | BOOLEAN     { $$ = createBooleanValue($1); }
@@ -237,3 +242,10 @@ LEAF_VALUE              : INT         { $$ = createIntegerValue($1); }
 
 /* END OF SECTION */
 %%
+
+/*
+                                            StringInfoData strf;
+                                            initStringInfo(&strf);
+                                            appendStringInfo(&strf, "\"%s\"", $1);
+                                            $$ = strf.data; 
+                                            */

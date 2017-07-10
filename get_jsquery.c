@@ -23,21 +23,6 @@ static void getValueOperator(StringInfo strInfo, char *key, ValueOperator *valOp
 static void getValueOperatorType(StringInfo strInfo, ValueOperatorType type);
 static void getValueType(StringInfo strInfo, char *type);
 
-
-/*
- * Function for concatination 1 string with form
- */
-char *
-sconcat1(char *form, char *s1, int plus) 
-{
-    size_t   len1 = strlen(s1);               
-    char    *result = palloc(len1 + 1 + plus);
-
-    sprintf(result,form,s1);  
-
-    return result;
-}
-
 static void
 getValueOperatorType(StringInfo strInfo, ValueOperatorType type)
 {
