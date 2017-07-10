@@ -42,10 +42,37 @@ Typical installation procedure may look like this:
     $ make USE_PGXS=1 installcheck
     $ psql DB -c "CREATE EXTENSION monq;"
 
-### MonQ structure
+### Usage
 
-MonQ extension contains `mquery` datatype which represents MongoDB query in tree structure.
+MonQ extension contains:
+* `mquery` - datatype which represents MongoDB query in tree structure;
+* `<=>` - maching operator which take like arguments jsonb document and mongoDB query. This operator have 2 variants of representation: `jsonb <=> mquery` and `mquery <=> jsonb`.
 
+Example of query:
+
+```
+select '{ "a" : [ "ssl","security", "pattern"] }'::jsonb <=> '{ a: { $all: [ "ssl","security"] } }'::mquery;
+```
+
+This mongoDB query:
+
+```
+{ a: { $all: [ "ssl","security"] } }
+```
+
+transformed to this JsQuery query:
+
+```
+a @> [ "ssl","security"]
+```
+and passed to JsQuery execution functions with jsonb document. Execution function return `true` or `false`dependently of result.
+
+```
+ ?column? 
+----------
+ t
+(1 row)
+```
 
 ### MongoDB operators supported by MonQ
 
@@ -53,7 +80,13 @@ MonQ is limited by opportunities JsQuery language, but support main part of Mong
 
 #### Comparison operators:
 * `$eq` - supported;
-   Example: `select '{"a": 5}'::jsonb <=> '{ a: { $eq: 5 } }';`
+* `$ne` - supported;
+* `$lt` - supported;
+* `$lte` - supported;
+* `$gt` - supported;
+* `$gte` - supported;
+* `$in` - supported;
+* `$nin` - supported;
 * All operators is supported.
 #### Logical operators:
 * All operators is supported.
