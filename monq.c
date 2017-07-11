@@ -47,6 +47,9 @@ mquery_in(PG_FUNCTION_ARGS)
     MQuery  *res;
 
     res = parsemquery(input);
+    res->jsQuery = callJsquery_in(getJsquery(res));
+    deleteMquery(res);
+
     PG_RETURN_MQUERY(res);
 }
 
@@ -58,12 +61,8 @@ Datum
 mquery_out(PG_FUNCTION_ARGS)
 {
     MQuery      *input = PG_GETARG_MQUERY(0);
-    char        *JSQUERY_QUERY = getJsquery(input);
-    Datum        jsquery_object = callJsquery_in(JSQUERY_QUERY);
 
-    deleteMquery(input);
-
-    PG_RETURN_CSTRING(callJsquery_out(jsquery_object));
+    PG_RETURN_CSTRING(callJsquery_out(input->jsQuery));
 }
 
 /*  
@@ -77,15 +76,8 @@ json_mquery_exec(PG_FUNCTION_ARGS)
 {
     Jsonb       *jb = PG_GETARG_JSONB(0);
     MQuery      *mq = PG_GETARG_MQUERY(1);
-    char        *JSQUERY_QUERY = getJsquery(mq);
-    Datum        js_query = callJsquery_in(JSQUERY_QUERY);
 
-    deleteMquery(mq);
-
-    PG_FREE_IF_COPY(jb, 0);
-    PG_FREE_IF_COPY(mq, 1);
-
-    return callJsquery_jsonb_exec(PointerGetDatum(jb), js_query);
+    return callJsquery_jsonb_exec(PointerGetDatum(jb), mq->jsQuery);
 }
 
 /*  
@@ -99,15 +91,8 @@ mquery_json_exec(PG_FUNCTION_ARGS)
 {
     MQuery      *mq = PG_GETARG_MQUERY(0);
     Jsonb       *jb = PG_GETARG_JSONB(1);
-    char        *JSQUERY_QUERY = getJsquery(mq);
-    Datum        js_query = callJsquery_in(JSQUERY_QUERY);
 
-    deleteMquery(mq);
-
-    PG_FREE_IF_COPY(mq, 0);
-    PG_FREE_IF_COPY(jb, 1);
-
-    return callJsquery_jsonb_exec(PointerGetDatum(jb), js_query);
+    return callJsquery_jsonb_exec(PointerGetDatum(jb), mq->jsQuery);
 }
 
 static Oid

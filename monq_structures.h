@@ -226,6 +226,7 @@ typedef struct ExpressionClause
 typedef struct MQuery
 {
     Expression *exp;
+    Datum jsQuery;
 } MQuery;
 
 

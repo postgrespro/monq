@@ -188,5 +188,4 @@ void
 deleteMquery(MQuery *query)
 {
     deleteExpression(query->exp);
-    pfree(query);
 }

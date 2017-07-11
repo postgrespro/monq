@@ -243,28 +243,52 @@ select '{ "b" : 2 }'::jsonb <=> '{ b: { $type: "decimal" } }';
 
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "maxKey" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "maxKey" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "maxKey" } }'...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "binData" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "binData" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "binData" } }...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "objectId" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "objectId" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "objectId" } ...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "javascript" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "javascript" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "javascript" ...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "symbol" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "symbol" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "symbol" } }'...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "javascriptWithScope" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "javascriptWithScope" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "javascriptWi...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "timestamp" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "timestamp" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "timestamp" }...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "minKey" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "minKey" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "minKey" } }'...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "regex" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "regex" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "regex" } }' ...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "null" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "null" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "null" } }' :...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "date" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "date" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "date" } }' :...
+                                        ^
 select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "undefined" } }' :: mquery;
 ERROR:  Jsquery is not supported MongoDB "undefined" value type
+LINE 1: select '{ "a" : 2 }'::jsonb <=> '{ y: { $type: "undefined" }...
+                                        ^
 /* Or operator */
 select '{ "quantity" : 2, "price" : 10 }'::jsonb <=> '{ $or: [ { quantity: { $lt: 20 } }, { price: 10 } ] }' :: mquery;
  ?column? 
@@ -332,6 +356,8 @@ select '{ "quantity" : 5, "price" : 1 }'::jsonb <=> '{ price: { $not: { $gt: 1.9
 /* Mod operator */
 select '{ "quantity" : 2, "price" : 10 }'::jsonb <=> '{ qty: { $mod: [ 4, 0 ] } } ' :: mquery;
 ERROR:  MongoDB module operator is not supported by jsquery
+LINE 2: ...ect '{ "quantity" : 2, "price" : 10 }'::jsonb <=> '{ qty: { ...
+                                                             ^
 select '{"a": 5}'::jsonb <=> '{ a: { $eq: 5 } }';
  ?column? 
 ----------
@@ -346,6 +372,8 @@ select '{"a": 5}'::jsonb <=> '{ a: { $eq: 6 } }';
 
 select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $where: "qw"} }' :: mquery;
 ERROR:  MongoDB where clause is not supported by jsquery
+LINE 1: ... '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $wher...
+                                                             ^
 select '{ "quantity" : "qw", "price" : 10 }'::jsonb <=> '{ { $text: { $search: "qsddjkhjw" } } }' :: mquery;
  ?column? 
 ----------
