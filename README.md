@@ -16,13 +16,13 @@ MonQ is released as mquery data type and <=> match operator for jsonb.
 
 MonQ is realized as an extension and not available in default PostgreSQL
 installation. It is available from
-[github](https://github.com/NikitOS94/MonQ)
+[github](https://github.com/postgrespro/MonQ)
 and supports PostgreSQL 9.4+.
 
 ### Installation
 
 MonQ is PostgreSQL extension which requires JsQuery extension 
-[github](https://github.com/NikitOS94/MonQ) and PostgreSQL 9.4 or higher.
+[github](https://github.com/postgrespro/jsquery) and PostgreSQL 9.4 or higher.
 
 Before build and install you should ensure following:
     
@@ -132,7 +132,7 @@ part of MongoDB query operators.
 * All operators is not supported.
 
 Examples of queries with all this operators you can find in the file 
-[sql/sql_test.sql](https://github.com/NikitOS94/MonQ/blob/master/sql/monq_test.sql)
+[sql/sql_test.sql](https://github.com/postgrespro/MonQ/blob/master/sql/monq_test.sql)
 
 ### Contribution
 
