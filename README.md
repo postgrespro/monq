@@ -115,7 +115,7 @@ part of MongoDB query operators.
 * `$where` - not supported.
 
 #### Bitwise operators:
-* All operators is not supported.
+* All operators are not supported.
 
 #### Array operators:
 * `$all` - supported;
@@ -123,13 +123,13 @@ part of MongoDB query operators.
 * `$size` - supported.
 
 #### Comment operators:
-* All operators is not supported.
+* All operators are not supported.
 
 #### Geospatial operators:
-* All operators is not supported.
+* All operators are not supported.
 
 #### Projextion operators:
-* All operators is not supported.
+* All operators are not supported.
 
 Examples of queries with all this operators you can find in the file 
 [sql/sql_test.sql](https://github.com/postgrespro/MonQ/blob/master/sql/monq_test.sql)
